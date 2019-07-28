@@ -11,6 +11,7 @@ import os, sys
 import soundfile as sf
 import matplotlib.pyplot as plt
 import random 
+import logging
 
 FLAGS = None 
 
@@ -66,7 +67,7 @@ EXPORT_PATH = FLAGS.export_path
 try:
 	IMPORTED_FILES = os.listdir(IMPORT_PATH) 
 except IOError as e:
-	print(e)
+	logging.error("Could not import file names from path '{}'.\n Exit program with error: {}".format(IMPORT_PATH, e))
 	exit()
 
 TOT_FILES_IMPORTED = len(IMPORTED_FILES)
@@ -99,13 +100,17 @@ def __main__():
 def imported_files():
 	#IMPORTED_FILES = os.listdir(IMPORT_PATH) # dir is your directory path
 	TOT_FILES_IMPORTED = len(IMPORTED_FILES)
-	print(IMPORT_PATH)
-	print('Tot number of files imported: ')
-	print(TOT_FILES_IMPORTED)
+	logging.info("Import path: {}".format(IMPORT_PATH))
+	logging.info("Total number of files names retrieved: {}".format(TOT_FILES_IMPORTED))
+	
 
-#creates new directory if not exists
 def makeDir(newDir):
-	if not os.path.exists(newDir): os.makedirs(newDir)
+	"""
+	creates new directory if not exists
+	"""
+	if not os.path.exists(newDir): 
+		os.makedirs(newDir)
+		logging.info("Created directory '{}'".format(newDir))
 	return newDir
 
 def get_spectrograms(y):
@@ -126,7 +131,7 @@ def segmentation(y,i,filename,mean_energy_of_file,CURRENT_POS,CLIP_DURATION,SAMP
 		unfiltered_signal, unfiltered_energy, filtered_signal, filtered_energy = get_spectrograms(data)
 		#Local average energy
 		mean_energy_of_window = np.mean(filtered_energy)
-		print(mean_energy_of_window/mean_energy_of_file)
+		logging.info("mean_energy_of_window/mean_energy_of_file = {}".format(mean_energy_of_window/mean_energy_of_file))
 		#extract loudest parts
 		if (mean_energy_of_window/mean_energy_of_file>=THRESHOLD_MEAN): #and localMax/mean_energy_of_file>THRESHOLD_MAX_OVER_MEAN):
 			#save if begging and end of snippet has low energy. 
@@ -191,11 +196,11 @@ def plot_spectrograms(unfiltered_energy,unfiltered_signal,filtered_energy,filter
 
 def pre_processing_audio(CURRENT_POS,TOT_CLIPS,IGNORED_CLIPS,SAVED_NOISE,TOTAL_DURATION, IGNORED_FILES):
 	for i in range(TOT_FILES_IMPORTED):
-		print(FLAGS.plot)
+		logging.info("FLAGS.plot: {}".format(FLAGS.plot))
 		filename = IMPORTED_FILES[i]
-		print('Preprocessing file: ' + str(i+1) + ' of ' + str(len(IMPORTED_FILES)))
-		print(filename)
-		print(CLIP_DURATION/SAMPLE_RATE)
+		logging.info("Preprocessing file: {} / {}".format(str(i+1), str(len(IMPORTED_FILES))))
+		logging.info("filename: {}".format(filename))
+		logging.info("CLIP_DURATION/SAMPLE_RATE = {}".format(str(CLIP_DURATION/SAMPLE_RATE)))
 		
 		#load audio file ad create a data array represenation
 		y, sr= librosa.load(str(IMPORT_PATH + filename), mono=True, offset=OFFSET, sr=SAMPLE_RATE)
@@ -218,22 +223,17 @@ def pre_processing_audio(CURRENT_POS,TOT_CLIPS,IGNORED_CLIPS,SAVED_NOISE,TOTAL_D
 		IGNORED_CLIPS = IGNORED_CLIPS + ignored_clips
 		SAVED_NOISE = SAVED_NOISE + saved_noise
 		IGNORED_FILES = IGNORED_FILES + ignored_files
-		print('Tot saved: ')
-		print(saved_bird_sounds)
-		print('Tot noise files saved: ')
-		print(saved_noise)
-		print('Tot clips ignored: ')
-		print(ignored_clips)
-		print('SAVED_NOISE: ')
-		print(SAVED_NOISE)
-		print('TOT_CLIPS: ')
-		print(TOT_CLIPS)
-		print('IGNORED_CLIPS: ')
-		print(IGNORED_CLIPS)
-		print('Ignored files: ')
-		print(IGNORED_FILES)
-	print('Total time: ' )
-	print(TOTAL_DURATION/60)
+		
+		logging.info('Tot number of birds clips saved: {}'.format(saved_bird_sounds))
+		logging.info('Tot number of noise clips saved: {}'.format(saved_noise))
+		logging.info('Tot number of clips ignored: {}'.format(ignored_clips))
+
+		logging.info('SAVED_NOISE: {}'.format(SAVED_NOISE))
+		logging.info('TOT_CLIPS: {}'.format(TOT_CLIPS))
+		logging.info('IGNORED_CLIPS: {}'.format(IGNORED_CLIPS))
+		logging.info('Ignored files: {}'.format(IGNORED_FILES))
+
+	logging.info('Total time: {}'.format(TOTAL_DURATION/60))
 	
 #if __name__ == '__main__':
 __main__()
