@@ -3,6 +3,8 @@ energy ("loudness") based segmentation
 
 This program export audio segments from a audio clip based on interesting events.
 An interesting event is registered if the energy levels breaks a defined threshold within a defined time frame.
+
+# TODO rewrite as a class
 """
 import librosa
 import librosa.display
@@ -75,9 +77,9 @@ SAMPLE_RATE = FLAGS.sample_rate
 CLIP_DURATION = FLAGS.CLIP_DURATION*FLAGS.sample_rate
 TOTAL_DURATION = 0
 OFFSET = 0.2
-THRESHOLD_MEAN = 0.85 #song=0.95 call=0.85
+THRESHOLD_MEAN = 0.85 # song=0.95 call=0.85
 
-#Spectrograms config
+# Spectrograms config
 N_FFT=2048
 HOP_LENGTH = 512
 UPPER_HZ_LIMIT=10000
@@ -94,7 +96,7 @@ IGNORED_FILES = 0
 def __main__():
 
 	imported_files()
-	makeDir(EXPORT_PATH)
+	make_dir(EXPORT_PATH)
 	pre_processing_audio(CURRENT_POS,TOT_CLIPS,IGNORED_CLIPS,SAVED_NOISE,TOTAL_DURATION,IGNORED_FILES)
 
 
@@ -119,6 +121,7 @@ def make_dir(new_dir):
 
 
 def get_spectrograms(y):
+	# TODO add function desc and what is y?
 	unfiltered_signal = np.abs(librosa.stft(y,n_fft=N_FFT, hop_length=HOP_LENGTH, win_length=N_FFT))
 	raw_energy = librosa.feature.rmse(S=unfiltered_signal, frame_length=N_FFT, hop_length=HOP_LENGTH)
 	# Filter out freq above 10k and below 1k Hz
@@ -193,7 +196,7 @@ def segmentation(
 			CURRENT_POS = CURRENT_POS + CLIP_DURATION*random.uniform(0.2, 0.4)
 	if saved_bird_sounds == 0:
 		ignored_files += 1
-	return saved_bird_sounds,saved_noise, ignored_clips,ignored_files
+	return saved_bird_sounds, saved_noise, ignored_clips, ignored_files
 
 
 def plot_spectrograms(unfiltered_energy, unfiltered_signal, filtered_energy, filtered_signal):
@@ -235,11 +238,11 @@ def pre_processing_audio(CURRENT_POS,TOT_CLIPS, IGNORED_CLIPS,SAVED_NOISE,TOTAL_
 		logging.info("CLIP_DURATION/SAMPLE_RATE = {}".format(str(CLIP_DURATION/SAMPLE_RATE)))
 
 		# load audio file ad create a data array represenation
-		y, sr= librosa.load(str(IMPORT_PATH + filename), mono=True, offset=OFFSET, sr=SAMPLE_RATE)
+		y, sr = librosa.load(str(IMPORT_PATH + filename), mono=True, offset=OFFSET, sr=SAMPLE_RATE)
 
 		# duration in sec
 		file_duration = librosa.get_duration(y=y, sr=sr)
-		TOTAL_DURATION = TOTAL_DURATION+file_duration
+		TOTAL_DURATION = TOTAL_DURATION + file_duration
 		energy_file = get_spectrograms(y)[3]
 		mean_energy_of_file = np.mean(energy_file)
 
